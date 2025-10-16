@@ -5,7 +5,6 @@ import SignatureCanvas from 'react-signature-canvas';
 import toast from 'react-hot-toast';
 import { CameraIcon, PencilIcon, UserCircleIcon, MapPinIcon, BuildingOffice2Icon } from '@heroicons/react/24/solid';
 
-// GI-USAB NGA IMPORT GIKAN SA react-to-print
 import ReactToPrint from 'react-to-print';
 import { PrintableConsent } from './PrintableConsent';
 
@@ -54,15 +53,16 @@ export default function ConsentForm() {
     setSignatureSrc(sigPadRef.current.toDataURL());
   };
 
+  // Kining function kay i-check ang validation sa dili pa mag-print
   const handleBeforePrint = () => {
-    // Check validation sa dili pa mag-print
     if (!name || !address || !provider || !imgSrc || sigPadRef.current.isEmpty()) {
       toast.error("Please complete all fields before printing.");
-      return Promise.reject(); // This will stop the print
+      return false; // Kini ang mag-cancel sa print
     }
-    return Promise.resolve();
+    return true;
   };
 
+  // Kining function kay i-reset ang form human ug print
   const handleAfterPrint = () => {
     toast.success('Form ready to be saved or printed!');
     setName('');
@@ -99,7 +99,6 @@ export default function ConsentForm() {
           <p className="text-slate-500 mt-1">PhilHealth Konsulta Program</p>
         </div>
         
-        {/* WALA NAY <form> ELEMENT KAY DILI NA TA MAG-SUBMIT */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <div className="lg:col-span-3 space-y-6">
             <InputField id="fullName" label="Beneficiary Full Name" value={name} onChange={(e) => setName(e.target.value)} required icon={UserCircleIcon} placeholder="Juan A. Dela Cruz" />
@@ -128,12 +127,11 @@ export default function ConsentForm() {
                 </p>
             </div>
 
-            {/* GI-USAB NGA PRINT BUTTON */}
             <div className='pt-4 hidden lg:block'>
                 <ReactToPrint
                     trigger={() => <PrimaryButton>Generate PDF / Print</PrimaryButton>}
                     content={() => componentToPrintRef.current}
-                    onBeforeGetContent={handleBeforePrint}
+                    onBeforePrint={handleBeforePrint}
                     onAfterPrint={handleAfterPrint}
                 />
             </div>
@@ -162,7 +160,7 @@ export default function ConsentForm() {
                 <ReactToPrint
                     trigger={() => <PrimaryButton>Generate PDF / Print</PrimaryButton>}
                     content={() => componentToPrintRef.current}
-                    onBeforeGetContent={handleBeforePrint}
+                    onBeforePrint={handleBeforePrint}
                     onAfterPrint={handleAfterPrint}
                 />
             </div>
