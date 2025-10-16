@@ -1,9 +1,3 @@
-# Dependencies
-/node_modules
-/consent-form-backend/node_modules
-
-# Secrets
-/consent-form-backend/serviceAccountKey.json
-
-# Build output
-/dist
+# Secret files
+serviceAccountKey.json
+/consent-form-backend/

@@ -13,6 +13,7 @@ export default function AdminView() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+<<<<<<< HEAD
     const fetchSubmissions = async () => {
       try {
         // Kuhaon ang data gikan sa Firestore, i-order by pinakabag-o
@@ -38,6 +39,12 @@ export default function AdminView() {
     };
 
     fetchSubmissions();
+=======
+    // Gigamit na nato ang relative path para sa Vercel
+    fetch('/api/submissions')
+      .then(response => response.json())
+      .then(data => setSubmissions(data));
+>>>>>>> 076ac68a0947ddab59204065df16ad4c0373f138
   }, []);
 
   return (
@@ -52,6 +59,7 @@ export default function AdminView() {
         </div>
 
         <div className="overflow-x-auto">
+<<<<<<< HEAD
           {isLoading ? (
             <p className="text-center p-8 text-slate-500">Loading submissions...</p>
           ) : (
@@ -63,6 +71,33 @@ export default function AdminView() {
                   <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Address</th>
                   <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Provider</th>
                   <th className="py-3 px-4 border-b text-center text-sm font-semibold text-slate-600">Links</th>
+=======
+          <table className="min-w-full bg-white border border-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Date Submitted</th>
+                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Name</th>
+                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Address</th>
+                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Provider</th>
+                <th className="py-3 px-4 border-b text-center text-sm font-semibold text-slate-600">Images</th>
+              </tr>
+            </thead>
+            <tbody>
+              {submissions.map((sub, index) => (
+                <tr key={index} className="hover:bg-slate-50">
+                  <td className="py-3 px-4 border-b text-slate-700">
+                    {/* Sakto nga pag-format sa Firestore timestamp */}
+                    {sub.submittedAt && sub.submittedAt._seconds ? new Date(sub.submittedAt._seconds * 1000).toLocaleString() : 'No date'}
+                  </td>
+                  <td className="py-3 px-4 border-b text-slate-700">{sub.name}</td>
+                  <td className="py-3 px-4 border-b text-slate-700">{sub.address}</td>
+                  <td className="py-3 px-4 border-b text-slate-700">{sub.provider}</td>
+                  <td className="py-3 px-4 border-b text-center">
+                    {/* Gigamit na ang photoUrl ug signatureUrl gikan sa Firestore */}
+                    <a href={sub.photoUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline mr-4">Photo</a>
+                    <a href={sub.signatureUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Signature</a>
+                  </td>
+>>>>>>> 076ac68a0947ddab59204065df16ad4c0373f138
                 </tr>
               </thead>
               <tbody>
