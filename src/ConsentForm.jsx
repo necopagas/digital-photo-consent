@@ -7,6 +7,12 @@ import toast from 'react-hot-toast';
 import { CameraIcon, PencilIcon, UserCircleIcon, MapPinIcon, BuildingOffice2Icon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
 
+// --- BAG-O NGA IMPORTS GIKAN SA FIREBASE ---
+import { db, storage } from './firebaseConfig';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+// ---------------------------------------------
+
 import InputField from './components/InputField';
 import PrimaryButton from './components/PrimaryButton';
 import SectionCard from './components/SectionCard';
@@ -43,6 +49,7 @@ export default function ConsentForm() {
   const retake = () => setImgSrc(null);
   const clearSignature = () => sigPadRef.current.clear();
 
+  // --- GI-USAB NGA handleSubmit FUNCTION ---
   const handleSubmit = async () => {
     if (!name || !address) return toast.error("Please fill in your name and address.");
     if (!provider) return toast.error("Please select a Konsulta Provider.");
@@ -52,18 +59,29 @@ export default function ConsentForm() {
     setIsLoading(true);
     const loadingToast = toast.loading('Submitting your consent...');
 
-    const signatureData = sigPadRef.current.toDataURL();
-    const submissionData = { name, address, imgSrc, signatureData, provider };
-
     try {
-        // --- FINAL URL PARA SA VERCEL ---
-        const response = await fetch('/api/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(submissionData),
+        const timestamp = Date.now();
+        const signatureData = sigPadRef.current.toDataURL();
+
+        // 1. Upload sa Photo sa Firebase Storage
+        const photoRef = ref(storage, `photos/${timestamp}-${name.replace(/\s+/g, '-')}-photo.jpeg`);
+        await uploadString(photoRef, imgSrc, 'data_url');
+        const photoUrl = await getDownloadURL(photoRef);
+
+        // 2. Upload sa Signature sa Firebase Storage
+        const signatureRef = ref(storage, `signatures/${timestamp}-${name.replace(/\s+/g, '-')}-signature.png`);
+        await uploadString(signatureRef, signatureData, 'data_url');
+        const signatureUrl = await getDownloadURL(signatureRef);
+        
+        // 3. Save sa Firestore Database
+        await addDoc(collection(db, "submissions"), {
+            name,
+            address,
+            provider,
+            photoUrl,
+            signatureUrl,
+            submittedAt: serverTimestamp()
         });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message);
 
         toast.dismiss(loadingToast);
         toast.success('Submission Successful!');
@@ -75,6 +93,7 @@ export default function ConsentForm() {
     } catch (error) {
         toast.dismiss(loadingToast);
         toast.error(`Submission Failed: ${error.message}`);
+        console.error("Error during submission:", error);
     } finally {
         setIsLoading(false);
     }
@@ -147,6 +166,7 @@ export default function ConsentForm() {
             </div>
 
             <div className="lg:col-span-2 space-y-6">
+              {/* --- KINI ANG GI-FIX NGA LINYA --- */}
               <SectionCard title="1. Photo Capture" icon={CameraIcon}>
                   <div className="flex-grow flex items-center justify-center bg-slate-200 rounded-md mt-2 w-full min-h-[160px]">
                     {imgSrc ? <img src={imgSrc} alt="Captured" className="rounded-md max-h-[160px] object-cover" /> : <Webcam height={160} width={213} ref={webcamRef} screenshotFormat="image/jpeg" className="rounded-md"/>}

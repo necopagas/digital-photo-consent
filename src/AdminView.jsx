@@ -3,14 +3,41 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeftIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
 
+// --- BAG-O NGA IMPORTS GIKAN SA FIREBASE ---
+import { db } from './firebaseConfig';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+// ---------------------------------------------
+
 export default function AdminView() {
   const [submissions, setSubmissions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Kuhaon ang data gikan sa atong bag-o nga backend endpoint
-    fetch('http://localhost:4000/submissions')
-      .then(response => response.json())
-      .then(data => setSubmissions(data.reverse())); // .reverse() para mauna ang pinakabag-o
+    const fetchSubmissions = async () => {
+      try {
+        // Kuhaon ang data gikan sa Firestore, i-order by pinakabag-o
+        const q = query(collection(db, 'submissions'), orderBy('submittedAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        const subsList = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            // I-convert ang Firestore timestamp to a readable date
+            submittedAt: data.submittedAt ? data.submittedAt.toDate() : new Date()
+          };
+        });
+        
+        setSubmissions(subsList);
+      } catch (error) {
+        console.error("Error fetching submissions: ", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSubmissions();
   }, []);
 
   return (
@@ -25,31 +52,36 @@ export default function AdminView() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border border-slate-200">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Date Submitted</th>
-                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Name</th>
-                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Address</th>
-                <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Provider</th>
-                <th className="py-3 px-4 border-b text-center text-sm font-semibold text-slate-600">Images</th>
-              </tr>
-            </thead>
-            <tbody>
-              {submissions.map((sub, index) => (
-                <tr key={index} className="hover:bg-slate-50">
-                  <td className="py-3 px-4 border-b text-slate-700">{new Date(sub.submittedAt).toLocaleString()}</td>
-                  <td className="py-3 px-4 border-b text-slate-700">{sub.name}</td>
-                  <td className="py-3 px-4 border-b text-slate-700">{sub.address}</td>
-                  <td className="py-3 px-4 border-b text-slate-700">{sub.provider}</td>
-                  <td className="py-3 px-4 border-b text-center">
-                    <a href={`http://localhost:4000/uploads/${sub.photoFile}`} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline mr-4">Photo</a>
-                    <a href={`http://localhost:4000/uploads/${sub.signatureFile}`} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Signature</a>
-                  </td>
+          {isLoading ? (
+            <p className="text-center p-8 text-slate-500">Loading submissions...</p>
+          ) : (
+            <table className="min-w-full bg-white border border-slate-200">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Date Submitted</th>
+                  <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Name</th>
+                  <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Address</th>
+                  <th className="py-3 px-4 border-b text-left text-sm font-semibold text-slate-600">Provider</th>
+                  <th className="py-3 px-4 border-b text-center text-sm font-semibold text-slate-600">Links</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {submissions.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-slate-50">
+                    <td className="py-3 px-4 border-b text-slate-700">{sub.submittedAt.toLocaleString()}</td>
+                    <td className="py-3 px-4 border-b text-slate-700">{sub.name}</td>
+                    <td className="py-3 px-4 border-b text-slate-700">{sub.address}</td>
+                    <td className="py-3 px-4 border-b text-slate-700">{sub.provider}</td>
+                    <td className="py-3 px-4 border-b text-center">
+                      {/* --- GI-USAB NGA LINKS PARA SA FIREBASE STORAGE --- */}
+                      <a href={sub.photoUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline mr-4">Photo</a>
+                      <a href={sub.signatureUrl} target="_blank" rel="noopener noreferrer" className="text-sky-600 hover:underline">Signature</a>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
