@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+  Idugang ni nga CSS sa ubos para itago ang
+  printable component sa screen pero dili sa print.
+*/
+@media screen {
+  .print-source {
+    display: none;
+  }
+}

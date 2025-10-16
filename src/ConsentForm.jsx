@@ -45,7 +45,7 @@ export default function ConsentForm() {
   }, [webcamRef, setImgSrc]);
 
   const retake = () => setImgSrc(null);
-
+  
   const clearSignature = () => {
     sigPadRef.current.clear();
     setSignatureSrc('');
@@ -69,7 +69,7 @@ export default function ConsentForm() {
         clearSignature();
     }
   });
-
+  
   // --- BAG-O NGA handleSubmit FUNCTION ---
   const handleSubmit = () => {
     if (!name || !address) return toast.error("Please fill in your name and address.");
@@ -83,8 +83,8 @@ export default function ConsentForm() {
 
   return (
     <div className="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
-      {/* Kani nga component kay para sa printing, pero tago lang siya sa screen */}
-      <div style={{ display: "none" }}>
+      {/* GI-USAB NGA PAMAAGI SA PAGTAGO SA COMPONENT */}
+      <div className="print-source">
         <PrintableConsent
           ref={componentToPrintRef}
           name={name}
@@ -108,13 +108,13 @@ export default function ConsentForm() {
           <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Digital Consent Portal</h1>
           <p className="text-slate-500 mt-1">PhilHealth Konsulta Program</p>
         </div>
-
+        
         <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
              <div className="lg:col-span-3 space-y-6">
                <InputField id="fullName" label="Beneficiary Full Name" value={name} onChange={(e) => setName(e.target.value)} required icon={UserCircleIcon} placeholder="Juan A. Dela Cruz" />
                <InputField id="address" label="Beneficiary Address" value={address} onChange={(e) => setAddress(e.target.value)} required icon={MapPinIcon} placeholder="123 Sampaguita, Mati City" />
-
+               
                <div>
                  <label htmlFor="provider" className="block text-sm font-medium text-slate-700 mb-1">Konsulta Provider</label>
                  <div className="relative">
@@ -131,20 +131,20 @@ export default function ConsentForm() {
                    </select>
                  </div>
                </div>
-
+               
                <div className="bg-slate-50 border-l-4 border-teal-500 p-4 rounded-r-lg">
                    <p className="text-sm text-slate-700 leading-relaxed">
                        Pinaagi sa pagpirma sa ubos, ako, si <strong className="font-semibold text-slate-800">{name || "(Imong Ngalan)"}</strong>, nagahatag sa akong pagtugot sa <strong className="font-semibold text-slate-800">{provider || "(Selected Provider)"}</strong> nga kolektahon, i-access, gamiton, i-proseso, ug i-store ang akong "personal and sensitive personal information"...
                    </p>
                </div>
-
+ 
                <div className='pt-4 hidden lg:block'>
                  <PrimaryButton type="submit">
                    Generate PDF / Print
                  </PrimaryButton>
                </div>
              </div>
-
+ 
              <div className="lg:col-span-2 space-y-6">
                <SectionCard title="1. Photo Capture" icon={CameraIcon}>
                    <div className="flex-grow flex items-center justify-center bg-slate-200 rounded-md mt-2 w-full min-h-[160px]">
@@ -163,7 +163,7 @@ export default function ConsentForm() {
                    </div>
                </SectionCard>
              </div>
-
+             
              <div className='pt-4 lg:hidden'>
                 <PrimaryButton type="submit">
                    Generate PDF / Print
