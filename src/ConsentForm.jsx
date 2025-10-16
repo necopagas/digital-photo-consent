@@ -5,10 +5,8 @@ import SignatureCanvas from 'react-signature-canvas';
 import toast from 'react-hot-toast';
 import { CameraIcon, PencilIcon, UserCircleIcon, MapPinIcon, BuildingOffice2Icon } from '@heroicons/react/24/solid';
 
-// --- BAG-O NGA IMPORTS PARA SA PRINTING ---
 import { useReactToPrint } from 'react-to-print';
 import { PrintableConsent } from './PrintableConsent';
-// ------------------------------------------
 
 import InputField from './components/InputField';
 import PrimaryButton from './components/PrimaryButton';
@@ -36,7 +34,7 @@ export default function ConsentForm() {
 
   const webcamRef = useRef(null);
   const sigPadRef = useRef(null);
-  const componentToPrintRef = useRef(); // Ref para sa atong printable component
+  const componentToPrintRef = useRef();
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
@@ -55,13 +53,11 @@ export default function ConsentForm() {
     setSignatureSrc(sigPadRef.current.toDataURL());
   };
 
-  // --- BAG-O NGA handlePrint FUNCTION ---
   const handlePrint = useReactToPrint({
     content: () => componentToPrintRef.current,
     documentTitle: () => `${name}-ConsentForm`,
     onAfterPrint: () => {
         toast.success('Form ready to be saved or printed!');
-        // Opsyonal: I-reset ang form human ug print
         setName('');
         setAddress('');
         setProvider('');
@@ -70,20 +66,21 @@ export default function ConsentForm() {
     }
   });
   
-  // --- BAG-O NGA handleSubmit FUNCTION ---
   const handleSubmit = () => {
     if (!name || !address) return toast.error("Please fill in your name and address.");
     if (!provider) return toast.error("Please select a Konsulta Provider.");
     if (!imgSrc) return toast.error("Please capture a photo.");
     if (sigPadRef.current.isEmpty()) return toast.error("Please provide a signature.");
 
-    // I-trigger ang print dialog
+    // --- DEBUGGING LINE ---
+    // Atong tan-awon kung unsa ang sulod sa ref sa dili pa mag-print
+    console.log("Value of componentToPrintRef:", componentToPrintRef.current);
+    
     handlePrint();
   }
 
   return (
     <div className="bg-slate-100 min-h-screen flex items-center justify-center p-4 font-sans">
-      {/* GI-USAB NGA PAMAAGI SA PAGTAGO SA COMPONENT */}
       <div className="print-source">
         <PrintableConsent
           ref={componentToPrintRef}
